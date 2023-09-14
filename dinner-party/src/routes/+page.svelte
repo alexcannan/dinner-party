@@ -1,9 +1,14 @@
+
 <script>
+  import PocketBase from 'pocketbase';
   import { writable } from 'svelte/store';
 
   import { host, showSplashScreen } from '$lib/stores';
 
   import SplashScreen from '$lib/SplashScreen.svelte';
+
+
+  const pb = new PocketBase('http://127.0.0.1:8090');
 
   let hostName = ''; // name of the host(s), not a networking term
 
@@ -18,7 +23,7 @@
   let name = '';
   let email = '';
 
-  function loadSavedData() {
+  function loadSavedUserData() {
     if (typeof localStorage !== 'undefined') {
       const savedName = localStorage.getItem('savedName');
       const savedEmail = localStorage.getItem('savedEmail');
@@ -26,6 +31,13 @@
       if (savedName) name = savedName;
       if (savedEmail) email = savedEmail;
     }
+  }
+
+  async function loadPartyData() {
+    const resultList = await pb.collection('parties').getFullList({
+      sort: '-when',
+    })
+    dinnerParties.set(resultList);
   }
 
   function addNewParty(event) {
@@ -64,7 +76,8 @@
     }
   }
 
-  loadSavedData();
+  loadSavedUserData();
+  loadPartyData();
 </script>
 
 {#if $showSplashScreen}
